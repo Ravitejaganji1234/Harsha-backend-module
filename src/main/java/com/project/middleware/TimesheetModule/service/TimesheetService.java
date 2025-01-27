@@ -86,64 +86,67 @@ public class TimesheetService {
 
     public TimesheetDTO createTimesheet(TimesheetDTO timesheetDTO) {
         // Validate essential fields
-        validateTimesheetDTO(timesheetDTO);
+        // validateTimesheetDTO(timesheetDTO);
 
         // Check for existing timesheets with the same start and end dates
-        List<Timesheet> existingTimesheets = timesheetRepository.findByEmployeeIdAndStartDateAndEndDate(
-                timesheetDTO.getEmployeeId(), timesheetDTO.getStartDate(), timesheetDTO.getEndDate());
+        // List<Timesheet> existingTimesheets = timesheetRepository.findByEmployeeIdAndStartDateAndEndDate(
+        //         timesheetDTO.getEmployeeId(), timesheetDTO.getStartDate(), timesheetDTO.getEndDate());
 
-        Timesheet timesheet;
+        // Timesheet timesheet;
 
-        if (!existingTimesheets.isEmpty()) {
-            Timesheet existingTimesheet = existingTimesheets.get(0);
+        // if (!existingTimesheets.isEmpty()) {
+        //     Timesheet existingTimesheet = existingTimesheets.get(0);
 
-            // Handle based on the status of the existing timesheet
-            switch (existingTimesheet.getStatus()) {
-                case APPROVED -> throw new TimesheetNotFoundException(
-                        "Timesheet has already been approved and cannot be modified for dates: " +
-                                existingTimesheet.getStartDate() + " to " + existingTimesheet.getEndDate());
-                case REJECTED -> timesheet = getTimesheet(timesheetDTO); // Create new timesheet for rejected case
-                default -> {
-                    updateTimesheetFields(existingTimesheet, timesheetDTO); // Modify the existing timesheet
-                    timesheet = existingTimesheet;
-                }
-            }
-        } else {
-            // Create a new timesheet if none exists
-            timesheet = getTimesheet(timesheetDTO);
-        }
+        //     // Handle based on the status of the existing timesheet
+        //     switch (existingTimesheet.getStatus()) {
+        //         case APPROVED -> throw new TimesheetNotFoundException(
+        //                 "Timesheet has already been approved and cannot be modified for dates: " +
+        //                         existingTimesheet.getStartDate() + " to " + existingTimesheet.getEndDate());
+        //         case REJECTED -> timesheet = getTimesheet(timesheetDTO); // Create new timesheet for rejected case
+        //         default -> {
+        //             updateTimesheetFields(existingTimesheet, timesheetDTO); // Modify the existing timesheet
+        //             timesheet = existingTimesheet;
+        //         }
+        //     }
+        // } else {
+        //     // Create a new timesheet if none exists
+        //     timesheet = getTimesheet(timesheetDTO);
+        // }
 
-        // Check if a pending timesheet exists for the same dates
-        if (isPendingTimesheetExists(timesheetDTO) && timesheetDTO.getId() == null) {
-            throw new TimesheetNotFoundException("A timesheet for these dates already exists and is awaiting manager approval.");
-        }
+        // // Check if a pending timesheet exists for the same dates
+        // if (isPendingTimesheetExists(timesheetDTO) && timesheetDTO.getId() == null) {
+        //     throw new TimesheetNotFoundException("A timesheet for these dates already exists and is awaiting manager approval.");
+        // }
+
+         Timesheet timesheet = getTimesheet(timesheetDTO);
 
         // Calculate total hours
         timesheetDTO.setTotalNumberOfHours(timesheet.getNumberOfHours() + timesheet.getExtraHours());
 
+      
         // Save and return the timesheet
         Timesheet savedTimesheet = timesheetRepository.save(timesheet);
         return mapToDTO(savedTimesheet);
     }
 
     // Helper method to validate timesheet data
-    private void validateTimesheetDTO(TimesheetDTO timesheetDTO) {
-        if (timesheetDTO == null || timesheetDTO.getEmployeeId() == null) {
-            throw new TimesheetNotFoundException("Timesheet data is invalid or missing. Employee ID is required.");
-        }
-        if (timesheetDTO.getNumberOfHours() < 0) {
-            throw new TimesheetNotFoundException("Number of hours cannot be negative.");
-        }
-        if (timesheetDTO.getStartDate() == null || timesheetDTO.getEndDate() == null) {
-            throw new TimesheetNotFoundException("Start date and end date are required.");
-        }
-    }
+    // private void validateTimesheetDTO(TimesheetDTO timesheetDTO) {
+    //     if (timesheetDTO == null || timesheetDTO.getEmployeeId() == null) {
+    //         throw new TimesheetNotFoundException("Timesheet data is invalid or missing. Employee ID is required.");
+    //     }
+    //     if (timesheetDTO.getNumberOfHours() < 0) {
+    //         throw new TimesheetNotFoundException("Number of hours cannot be negative.");
+    //     }
+    //     if (timesheetDTO.getStartDate() == null || timesheetDTO.getEndDate() == null) {
+    //         throw new TimesheetNotFoundException("Start date and end date are required.");
+    //     }
+    // }
 
     // Helper method to check if a pending timesheet exists
-    private boolean isPendingTimesheetExists(TimesheetDTO timesheetDTO) {
-        return timesheetRepository.existsByEmployeeIdAndStartDateAndEndDateAndStatus(
-                timesheetDTO.getEmployeeId(), timesheetDTO.getStartDate(), timesheetDTO.getEndDate(), Timesheet.Status.PENDING);
-    }
+    // private boolean isPendingTimesheetExists(TimesheetDTO timesheetDTO) {
+    //     return timesheetRepository.existsByEmployeeIdAndStartDateAndEndDateAndStatus(
+    //             timesheetDTO.getEmployeeId(), timesheetDTO.getStartDate(), timesheetDTO.getEndDate(), Timesheet.Status.PENDING);
+    // }
 
 
     // Method to retrieve all timesheets
